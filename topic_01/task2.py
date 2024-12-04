@@ -1,5 +1,5 @@
 def StrFunc():
-    origin = "  hello world!  "
+    origin = "  Hello world!  "
     stripped = origin.strip()
     print(f"strip():'{stripped}'") 
     capitalized = stripped.capitalize()
