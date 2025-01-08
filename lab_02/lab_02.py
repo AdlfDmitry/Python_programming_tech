@@ -1,99 +1,143 @@
 import csv
-from sys import argv
+import sys
 
-# Initial directory
-student_list = []
+list = []
 
-def load_from_csv(file_name):
-    """Load students from a CSV file into the student directory."""
-    global student_list
+def load_from_csv(filename):
+
     try:
-        with open(file_name, mode='r', newline='') as file:
+        with open(filename, 'r', encoding='utf-8') as file:
             reader = csv.DictReader(file)
-            student_list = list(reader)
-        print("Data loaded successfully from", file_name)
+            for row in reader:
+                list.append(row)
+        print(f"Data loaded successfully from {filename}")
     except FileNotFoundError:
-        print("File not found. Starting with an empty directory.")
+        print(f"Error: File not found: {filename}")
+    except Exception as e:
+        print(f"Error loading data from CSV: {e}")
 
-def save_to_csv(file_name):
-    """Save the current student directory to a CSV file."""
-    global student_list
-    with open(file_name, mode='w', newline='') as file:
-        if student_list:
-            fieldnames = student_list[0].keys()
+
+def save_to_csv(filename):
+    
+     try:
+        with open(filename, 'w', encoding='utf-8', newline='') as file:
+            fieldnames = ["name", "phone", "email", "gender"]
             writer = csv.DictWriter(file, fieldnames=fieldnames)
             writer.writeheader()
-            writer.writerows(student_list)
-        print("Data saved to", file_name)
+            writer.writerows(list)
+            print(f"Data saved successfully to {filename}")
+     except Exception as e:
+        print(f"Error saving data to CSV: {e}")
 
-def print_all():
-    """Print all student records."""
-    for student in student_list:
-        print(
-            f"Student name: {student['name']}, Phone: {student['phone']}, Email: {student['email']}, Gender: {student['gender']}"
-        )
 
-def add_new_student():
-    """Add a new student to the directory."""
-    name = input("Enter student name: ")
-    phone = input("Enter student phone: ")
-    email = input("Enter student email: ")
-    gender = input("Enter student gender: ")
-    new_student = {"name": name, "phone": phone, "email": email, "gender": gender}
-    insert_position = next((i for i, student in enumerate(student_list) if name < student["name"]), len(student_list))
-    student_list.insert(insert_position, new_student)
-    print("Student added successfully.")
+def printAllList():
+   
+    for elem in list:
+        strForPrint = f"Student name is {elem['name']},  Phone is {elem['phone']}, Email is {elem['email']}, Gender is {elem['gender']}"
+        print(strForPrint)
+    return
 
-def delete_student():
-    """Delete a student by name."""
-    name = input("Enter name of the student to delete: ")
-    global student_list
-    student_list = [student for student in student_list if student["name"] != name]
-    print(f"Deleted student with name {name}.")
 
-def update_student():
-    """Update a student's information."""
-    name = input("Enter name of the student to update: ")
-    student = next((s for s in student_list if s["name"] == name), None)
-    if not student:
-        print("Student not found.")
+def addNewElement():
+ 
+    name = input("Please enter student name: ")
+    phone = input("Please enter student phone: ")
+    email = input("Please enter student email: ")
+    gender = input("Please enter student gender: ")
+    newItem = {"name": name, "phone": phone, "email": email, "gender": gender}
+    insertPosition = 0
+    for item in list:
+        if name > item["name"]:
+            insertPosition += 1
+        else:
+            break
+    list.insert(insertPosition, newItem)
+    print("New element has been added")
+    return
+
+
+def deleteElement():
+  
+    name = input("Please enter name to be delated: ")
+    deletePosition = -1
+    for item in list:
+        if name == item["name"]:
+            deletePosition = list.index(item)
+            break
+    if deletePosition == -1:
+        print("Element was not found")
+    else:
+        print("Dele position " + str(deletePosition))
+        del list[deletePosition]
+    return
+
+
+def updateElement():
+   
+    name = input("Please enter name to be updated: ")
+    updateStudent = None
+    for student in list:
+        if name == student["name"]:
+            updateStudent = student
+            break
+    if not updateStudent:
+        print("Student not found")
         return
-    print(f"Current details - Name: {student['name']}, Phone: {student['phone']}, Email: {student['email']}, Gender: {student['gender']}")
-    student["name"] = input(f"Enter new name (leave empty to keep '{student['name']}'): ") or student["name"]
-    student["phone"] = input(f"Enter new phone (leave empty to keep '{student['phone']}'): ") or student["phone"]
-    student["email"] = input(f"Enter new email (leave empty to keep '{student['email']}'): ") or student["email"]
-    student["gender"] = input(f"Enter new gender (leave empty to keep '{student['gender']}'): ") or student["gender"]
-    print("Student updated successfully.")
+    print(f"Current details - Name: {updateStudent['name']}, Phone: {updateStudent['phone']}, Email: {updateStudent['email']}, Gender: {updateStudent['gender']}")
+    new_name = input(f"Enter new name (leave empty to keep '{updateStudent['name']}'): ") or updateStudent["name"]
+    new_phone = input(f"Enter new phone (leave empty to keep '{updateStudent['phone']}'): ") or updateStudent["phone"]
+    new_email = input(f"Enter new email (leave empty to keep '{updateStudent['email']}'): ") or updateStudent["email"]
+    new_gender = input(f"Enter new gender (leave empty to keep '{updateStudent['gender']}'): ") or updateStudent["gender"]
+    updatedStudent = {"name": new_name, "phone": new_phone, "email": new_email, "gender": new_gender}
+    
+    list.remove(updateStudent)
+
+    insertPosition = 0
+    for student in list:
+        if updatedStudent["name"] > student["name"]:
+            insertPosition += 1
+        else:
+            break
+    list.insert(insertPosition, updatedStudent)
+    print("Student information has been updated successfully")
+    return
+
 
 def main():
-    """Main program loop."""
-    if len(argv) < 2:
-        print("Usage: python script.py <input_csv_file>")
-        return
-
-    input_file = argv[1]
    
+    if len(sys.argv) != 2:
+        print("Usage: python lab_01.py <csv_file>")
+        return
+    
+    csv_file = sys.argv[1]
+    load_from_csv(csv_file)
 
-    # Load data from CSV
-    load_from_csv(input_file)
 
     while True:
-        action = input("Choose action [C: create, U: update, D: delete, P: print, X: exit]: ").lower()
-        match action:
-            case "c":
-                add_new_student()
-            case "u":
-                update_student()
-            case "d":
-                delete_student()
-            case "p":
-                print_all()
-            case "x":
-                save_to_csv(input_file)
-                print("Exiting program.")
+        chouse = input("Please specify the action [ C create, U update, D delete, P print,  X exit ] ")
+        match chouse:
+            case "C" | "c":
+                print("New element will be created:")
+                addNewElement()
+                printAllList()
+            case "U" | "u":
+                print("Existing element will be updated")
+                updateElement()
+                printAllList()
+            case "D" | "d":
+                print("Element will be deleted")
+                deleteElement()
+                printAllList()
+            case "P" | "p":
+                print("List will be printed")
+                printAllList()
+            case "X" | "x":
+                print("Exit()")
+                save_to_csv("students_output.csv") # Save to csv before exit
                 break
             case _:
-                print("Invalid choice. Try again.")
+                print("Wrong chouse")
+
 
 if __name__ == "__main__":
     main()
